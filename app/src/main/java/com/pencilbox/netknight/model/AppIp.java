@@ -6,7 +6,7 @@ import org.litepal.crud.DataSupport;
  * Created by pencil-box on 16/6/27.
  * 记录的IP信息
  */
-public class AppIp extends DataSupport{
+public class AppIp extends DataSupport {
 
     private long id;
     private String ip;

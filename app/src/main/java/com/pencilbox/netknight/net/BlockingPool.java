@@ -1,7 +1,5 @@
 package com.pencilbox.netknight.net;
 
-import android.provider.ContactsContract;
-
 import com.pencilbox.netknight.model.BlockIp;
 import com.pencilbox.netknight.model.BlockName;
 
@@ -21,38 +19,38 @@ public class BlockingPool {
     public static volatile boolean isBlockName = false;
 
 
-    private static List<BlockIp>  sBlockingIpList;
+    private static List<BlockIp> sBlockingIpList;
 
     private static List<BlockName> sBlockingNameList;
 
-    static{
+    static {
         sBlockingIpList = new ArrayList<>();
         sBlockingNameList = new ArrayList<>();
 
     }
 
 
-    public static void initIp(){
+    public static void initIp() {
         sBlockingIpList = DataSupport.findAll(BlockIp.class);
     }
 
-    public static void initName(){
+    public static void initName() {
         sBlockingNameList = DataSupport.findAll(BlockName.class);
     }
 
 
-    public static void closeIp(){
+    public static void closeIp() {
         sBlockingIpList = null;
     }
-    public static void closeName(){
+
+    public static void closeName() {
         sBlockingNameList = null;
     }
 
 
+    public static ArrayList<BlockIp> getIpList() {
 
-    public static ArrayList<BlockIp> getIpList(){
-
-        if(sBlockingIpList==null){
+        if (sBlockingIpList == null) {
             sBlockingIpList = DataSupport.findAll(BlockIp.class);
         }
 
@@ -60,8 +58,8 @@ public class BlockingPool {
         return (ArrayList<BlockIp>) sBlockingIpList;
     }
 
-    public static ArrayList<BlockName> getNameList(){
-        if(sBlockingNameList==null){
+    public static ArrayList<BlockName> getNameList() {
+        if (sBlockingNameList == null) {
             sBlockingNameList = DataSupport.findAll(BlockName.class);
 
         }
@@ -71,20 +69,23 @@ public class BlockingPool {
 
     /**
      * 需要传入含有id号的实体类,所以要存储数据库之后再操作
+     *
      * @param blockName
      */
-    public static void addName(BlockName blockName){
+    public static void addName(BlockName blockName) {
         sBlockingNameList.add(blockName);
     }
-    public static void addIp(BlockIp blockIp){
+
+    public static void addIp(BlockIp blockIp) {
         sBlockingIpList.add(blockIp);
     }
 
 
-    public static void removeName(int position){
+    public static void removeName(int position) {
         sBlockingNameList.remove(position);
     }
-    public static void removeIp(int position){
+
+    public static void removeIp(int position) {
         sBlockingIpList.remove(position);
     }
 }

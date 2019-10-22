@@ -9,7 +9,7 @@ import org.litepal.crud.DataSupport;
  * Created by pencil-box on 16/6/27.
  * 应用信息表
  */
-public class App extends DataSupport{
+public class App extends DataSupport {
 
     private long id;
     //app的label名称
@@ -23,7 +23,7 @@ public class App extends DataSupport{
 
 
     //存储的时app icon的drawable信息
-    @Column(ignore=true)
+    @Column(ignore = true)
     private Drawable icon;
 
     //uid  userId每一个app对应的唯一uid
@@ -36,7 +36,6 @@ public class App extends DataSupport{
     public void setUid(int uid) {
         this.uid = uid;
     }
-
 
 
     //wifi类型,移动数据访问类型,具体存储什么查看Constants

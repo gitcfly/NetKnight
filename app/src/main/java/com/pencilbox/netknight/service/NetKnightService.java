@@ -9,12 +9,14 @@ import android.util.Log;
 
 import com.pencilbox.netknight.model.App;
 import com.pencilbox.netknight.net.ByteBufferPool;
-import com.pencilbox.netknight.net.NetInput;
 import com.pencilbox.netknight.net.NetNotifyThread;
-import com.pencilbox.netknight.net.NetOutput;
 import com.pencilbox.netknight.net.Packet;
 import com.pencilbox.netknight.net.TCB;
 import com.pencilbox.netknight.net.TCBCachePool;
+import com.pencilbox.netknight.net.TCPInput;
+import com.pencilbox.netknight.net.TCPOutput;
+import com.pencilbox.netknight.net.UDPInput;
+import com.pencilbox.netknight.net.UDPOutput;
 import com.pencilbox.netknight.pcap.PCapFilter;
 import com.pencilbox.netknight.utils.AppUtils;
 import com.pencilbox.netknight.utils.MyLog;
@@ -36,12 +38,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class NetKnightService extends VpnService implements Runnable {
 
 
-
-
-
-
-
-
     //VPN转发的IP地址咯
     public static String  VPN_ADDRESS = "10.1.10.1";
 
@@ -55,16 +51,25 @@ public class NetKnightService extends VpnService implements Runnable {
     //即将发送至应用的数据包
     private LinkedBlockingQueue<ByteBuffer> mOutputQueue;
 
+
+    private LinkedBlockingQueue<Packet> udpOutputQueue;
+
+    private LinkedBlockingQueue<ByteBuffer> udpInputQueue;
+
     //缓存的appInfo队列,请求被拦截的队列
     private LinkedBlockingQueue<App> mCacheAppInfo;
     //网络访问通知线程
     private NetNotifyThread mNetNotify;
 
     //网络输入输出
-    private NetInput mNetInput;
-    private NetOutput mNetOutput;
+    private TCPInput mTCPInput;
+    private TCPOutput mTCPOutput;
+    private UDPInput mUdpInput;
+    private UDPOutput mUdpOutput;
 
     private Selector mChannelSelector;
+
+    private Selector UdpSelector;
 
 
     public static volatile boolean isRunning = false;
@@ -121,49 +126,36 @@ public class NetKnightService extends VpnService implements Runnable {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         MyLog.logd(this,"onStartCommand");
-
         setupVpn();
-
-
-
         try {
             mChannelSelector = Selector.open();
+            UdpSelector = Selector.open();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
         mCacheAppInfo = new LinkedBlockingQueue<>();
         mNetNotify = new NetNotifyThread(this,mCacheAppInfo);
-
-
-
         mInputQueue = new LinkedBlockingQueue<>();
         mOutputQueue = new LinkedBlockingQueue<>();
-
-
-
-        mNetInput = new NetInput(mOutputQueue, mChannelSelector);
+        udpInputQueue = new LinkedBlockingQueue<>();
+        udpOutputQueue = new LinkedBlockingQueue<>();
+        mTCPInput = new TCPInput(mOutputQueue, mChannelSelector);
         //这个传参要不要等init好再传呢
-        mNetOutput = new NetOutput(mInputQueue, mOutputQueue, this, mChannelSelector,mCacheAppInfo);
-
-
-
-
-
+        mTCPOutput = new TCPOutput(mInputQueue, mOutputQueue, this, mChannelSelector, mCacheAppInfo);
+        mUdpInput = new UDPInput(udpInputQueue, UdpSelector);
+        mUdpOutput = new UDPOutput(udpOutputQueue, UdpSelector, this);
         //还是直接start呢?
 //        ExecutorService executorService = Executors.newFixedThreadPool(3);
-//        executorService.execute(mNetInput);
-//        executorService.execute(mNetOutput);
+//        executorService.execute(mTCPInput);
+//        executorService.execute(mTCPOutput);
 //        executorService.execute(this);
-
 //        MyLog.logd(this,fd.toString());
         mNetNotify.start();
-        mNetOutput.start();
-        mNetInput.start();
+        mTCPOutput.start();
+        mTCPInput.start();
+        mUdpInput.start();
+        mUdpOutput.start();
         new Thread(this).start();
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -171,27 +163,17 @@ public class NetKnightService extends VpnService implements Runnable {
 
     @Override
     public void run() {
-
-
         MyLog.logd(this, "start");
         isRunning = true;
-
-
         FileChannel vpnInput = new FileInputStream(mInterface.getFileDescriptor()).getChannel();
         FileChannel vpnOutput = new FileOutputStream(mInterface.getFileDescriptor()).getChannel();
-
         ByteBuffer buffer4Net;
         ByteBuffer buffer2Net = null;
         boolean isDataSend = true;
-
 //        int sleepTime = 1;
-
         try {
-
             while (true) {
-
-
-
+                Thread.sleep(10);
                 if(!isRunning){
                     Log.d("NetKnight","isRunning is false");
                     if(isCalledByUser){
@@ -261,7 +243,10 @@ public class NetKnightService extends VpnService implements Runnable {
 
                         mInputQueue.offer(packet2net);
                         isDataSend = true;
-                    }else{
+                    } else if (packet2net.isUDP()) {
+                        udpOutputQueue.offer(packet2net);
+                        isDataSend = true;
+                    } else {
                         MyLog.logd(this,"暂时不支持其他类型数据!!");
                         isDataSend = false;
                     }
@@ -322,8 +307,8 @@ public class NetKnightService extends VpnService implements Runnable {
 
 
         isRunning = false;
-        mNetInput.quit();
-        mNetOutput.quit();
+        mTCPInput.quit();
+        mTCPOutput.quit();
         mNetNotify.quit();
 
 
@@ -352,12 +337,5 @@ public class NetKnightService extends VpnService implements Runnable {
 
         MyLog.logd(this, "onDestroy");
     }
-
-
-
-
-
-
-
 
 }

@@ -6,7 +6,7 @@ import org.litepal.crud.DataSupport;
  * Created by AbelSu on 16/6/29.
  * 抓取流量包的实体类
  */
-public class Bag extends DataSupport{
+public class Bag extends DataSupport {
 
     private long id;//记录索引
     private long appId;//应用包名
@@ -19,9 +19,13 @@ public class Bag extends DataSupport{
     private String protocol;//通讯协议
 
     //Get & Set methods
-    public long getId() { return id; }
+    public long getId() {
+        return id;
+    }
 
-    public void setId(long id) { this.id = id; }
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public long getAppId() {
         return appId;
@@ -80,7 +84,12 @@ public class Bag extends DataSupport{
     }
 
     //Methods to be complete
-    public void graspBag(long appId) { }
-    public void saveGraspedBag(long appId) { }
-    public void showBagDetails() { }
+    public void graspBag(long appId) {
+    }
+
+    public void saveGraspedBag(long appId) {
+    }
+
+    public void showBagDetails() {
+    }
 }

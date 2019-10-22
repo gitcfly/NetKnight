@@ -31,10 +31,10 @@ import java.util.concurrent.BlockingQueue;
  * 发起实际的网络请求数据,tcp通过socketServer实现,udp待完成
  * 需要处理获取的虚拟网卡数据
  */
-public class NetOutput extends Thread {
+public class TCPOutput extends Thread {
 
 
-    private final static String TAG = "NetOutput";
+    private final static String TAG = "TCPOutput";
 
 
     private volatile boolean mQuit = false;
@@ -52,7 +52,7 @@ public class NetOutput extends Thread {
 
     private VpnService mVpnService;
 
-    public NetOutput(BlockingQueue<Packet> inputQueue, BlockingQueue<ByteBuffer> outputQueue, VpnService vpnService, Selector selector,BlockingQueue<App> appCacheQueue) {
+    public TCPOutput(BlockingQueue<Packet> inputQueue, BlockingQueue<ByteBuffer> outputQueue, VpnService vpnService, Selector selector, BlockingQueue<App> appCacheQueue) {
         mOutputQueue = outputQueue;
         mInputQueue = inputQueue;
 
@@ -83,7 +83,7 @@ public class NetOutput extends Thread {
 
                 //阻塞等到有数据就处理
                 currentPacket = mInputQueue.poll();
-                Thread.sleep(15);
+                Thread.sleep(10);
 
                 if (currentPacket == null) {
                     continue;
@@ -331,18 +331,13 @@ public class NetOutput extends Thread {
         }
 
 
-
-
-
 //        //TODO 抓包咯,这样很不妥呀,还要根据相关信息构建包orz
         ByteBuffer sourceBuffer = ByteBufferPool.acquire();
-        referencePacket.updateTCPBuffer(sourceBuffer, (byte) Packet.TCPHeader.SYN,referencePacket.tcpHeader.sequenceNumber,
-                referencePacket.tcpHeader.acknowledgementNumber,0);
+        referencePacket.updateTCPBuffer(sourceBuffer, (byte) Packet.TCPHeader.SYN, referencePacket.tcpHeader.sequenceNumber,
+                referencePacket.tcpHeader.acknowledgementNumber, 0);
 
-        PCapFilter.filterPacket(sourceBuffer,passAppId);
+        PCapFilter.filterPacket(sourceBuffer, passAppId);
         ByteBufferPool.release(sourceBuffer);
-
-
 
 
         referencePacket.swapSourceAndDestination();
@@ -356,7 +351,6 @@ public class NetOutput extends Thread {
 
         //存储起来先orz
         TCBCachePool.putTCB(ipAndPort, tcb);
-
 
 
         try {
@@ -469,7 +463,7 @@ public class NetOutput extends Thread {
 
 
         boolean isPass = filterByAppSetting(appList.get(0));
-        if(!isPass){
+        if (!isPass) {
             return -1;
         }
 
@@ -484,21 +478,19 @@ public class NetOutput extends Thread {
 
     /**
      * 根据app的设置信息进行拦截
+     *
      * @param app
      * @return
      */
     private boolean filterByAppSetting(App app) {
 
 
-
-        if(NetChangeReceiver.sNetState == NetChangeReceiver.NET_STATE_MOBILE){
-
+        if (NetChangeReceiver.sNetState == NetChangeReceiver.NET_STATE_MOBILE) {
 
 
-            switch (app.getMobileDataType()){
+            switch (app.getMobileDataType()) {
 
                 case Constants.ACCESS_TYPE_ALLOW:
-
 
 
                     return true;
@@ -523,12 +515,11 @@ public class NetOutput extends Thread {
 
 
         }
-        if(NetChangeReceiver.sNetState == NetChangeReceiver.NET_STATE_WIFI){
+        if (NetChangeReceiver.sNetState == NetChangeReceiver.NET_STATE_WIFI) {
 
-            switch (app.getWifiType()){
+            switch (app.getWifiType()) {
 
                 case Constants.ACCESS_TYPE_ALLOW:
-
 
 
                     return true;

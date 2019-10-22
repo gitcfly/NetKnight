@@ -5,10 +5,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.pencilbox.netknight.model.Traffic;
-import com.pencilbox.netknight.utils.MyLog;
 
 import java.io.IOException;
-import java.nio.channels.Channel;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,41 +15,42 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by pencil-box on 16/7/1.
  * TCB缓存池,采用线程安全的concurrenthashmap实现
  */
-public class TCBCachePool  {
+public class TCBCachePool {
 
     private static final String TAG = "TCBCachePool";
 
-    private static ConcurrentHashMap<String,TCB> mPool;
+    private static ConcurrentHashMap<String, TCB> mPool;
 
-    static{
+    static {
 
-        mPool = new ConcurrentHashMap<String,TCB>();
+        mPool = new ConcurrentHashMap<String, TCB>();
 
     }
 
     /**
      * 存储TCB
+     *
      * @param ipAndPort
      * @param tcb
      */
-    public static void putTCB(String ipAndPort,TCB tcb){
+    public static void putTCB(String ipAndPort, TCB tcb) {
 
-        if(TextUtils.isEmpty(ipAndPort)||tcb ==null){
-            Log.e(TAG,"Key or value is null.");
+        if (TextUtils.isEmpty(ipAndPort) || tcb == null) {
+            Log.e(TAG, "Key or value is null.");
             return;
         }
-        mPool.put(ipAndPort,tcb);
-
+        mPool.put(ipAndPort, tcb);
 
 
     }
 
     /**
      * 获取TCB咯
+     *
      * @param ipAndPort
      * @return
      */
-    public static TCB getTCB(String ipAndPort){
+    public static TCB getTCB(String ipAndPort) {
         TCB tcb = mPool.get(ipAndPort);
 
         return tcb;
@@ -60,11 +59,10 @@ public class TCBCachePool  {
 
     /**
      * 关闭TCB,移除it
+     *
      * @param ipAndPort
      */
-    public static void closeTCB(String ipAndPort){
-
-
+    public static void closeTCB(String ipAndPort) {
 
 
         saveTrafficInfo(mPool.get(ipAndPort));
@@ -80,7 +78,6 @@ public class TCBCachePool  {
 //        }
 
     }
-
 
 
     /**
@@ -99,23 +96,23 @@ public class TCBCachePool  {
                 e.printStackTrace();
             }
         }
-        Log.d("TCBCachePool","TCB Cache全部清理完毕");
+        Log.d("TCBCachePool", "TCB Cache全部清理完毕");
 
         mPool.clear();
     }
 
 
-    private static void saveTrafficInfo(TCB tcb){
+    private static void saveTrafficInfo(TCB tcb) {
 
         Traffic traffic = new Traffic();
         traffic.setAppId(tcb.getAppId());
         traffic.setMobileSize(tcb.getMobileBytes());
         traffic.setWifiSize(tcb.getWifiBytes());
         traffic.setRecordTime(System.currentTimeMillis());
-        if(traffic.save()){
-            Log.d(TAG,"保存流量成功");
-        }else{
-            Log.e(TAG,"保存流量失败");
+        if (traffic.save()) {
+            Log.d(TAG, "保存流量成功");
+        } else {
+            Log.e(TAG, "保存流量失败");
         }
 
     }
