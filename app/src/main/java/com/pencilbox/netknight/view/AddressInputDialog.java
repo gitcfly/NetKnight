@@ -1,31 +1,21 @@
 package com.pencilbox.netknight.view;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.pencilbox.netknight.R;
-import com.pencilbox.netknight.presentor.IBlockingDomainImpl;
 import com.pencilbox.netknight.presentor.IBlockingDomainPresenter;
-import com.pencilbox.netknight.presentor.IBlockingIpPresenter;
-import com.pencilbox.netknight.presentor.ListAdapter;
 import com.pencilbox.netknight.utils.IPCheckUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by wu on 16/7/8.

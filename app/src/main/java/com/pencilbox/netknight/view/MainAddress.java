@@ -3,7 +3,7 @@ package com.pencilbox.netknight.view;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,18 +20,9 @@ import android.widget.PopupWindow;
 import android.widget.Switch;
 
 import com.pencilbox.netknight.R;
-import com.pencilbox.netknight.model.BlockIp;
-import com.pencilbox.netknight.model.BlockName;
 import com.pencilbox.netknight.net.BlockingPool;
-import com.pencilbox.netknight.presentor.BlockingIpImpl;
 import com.pencilbox.netknight.presentor.IBlockingDomainImpl;
 import com.pencilbox.netknight.presentor.IBlockingDomainPresenter;
-import com.pencilbox.netknight.presentor.ListAdapter;
-
-import org.litepal.crud.DataSupport;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class MainAddress extends Fragment implements IBlockingAddressView {

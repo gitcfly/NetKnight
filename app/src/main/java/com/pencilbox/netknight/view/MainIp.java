@@ -3,9 +3,8 @@ package com.pencilbox.netknight.view;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.VpnService;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -20,7 +19,6 @@ import android.widget.PopupWindow;
 import android.widget.Switch;
 
 import com.pencilbox.netknight.R;
-import com.pencilbox.netknight.model.BlockIp;
 import com.pencilbox.netknight.net.BlockingPool;
 import com.pencilbox.netknight.presentor.BlockingIpImpl;
 import com.pencilbox.netknight.presentor.IBlockingIpPresenter;

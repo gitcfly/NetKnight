@@ -1,8 +1,7 @@
 package com.pencilbox.netknight.view;
 
-import android.graphics.Color;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,11 +9,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.pencilbox.netknight.R;
 import com.pencilbox.netknight.presentor.DairyImpl;
 import com.pencilbox.netknight.presentor.IDairyPresenter;

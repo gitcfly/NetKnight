@@ -4,24 +4,21 @@ package com.pencilbox.netknight.view;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import com.pencilbox.netknight.R;
-import com.pencilbox.netknight.model.BlockName;
 import com.pencilbox.netknight.presentor.ListAdapter;
 import com.pencilbox.netknight.service.NetKnightService;
 import com.pencilbox.netknight.utils.MyLog;
-
-import org.litepal.crud.DataSupport;
 
 import java.util.ArrayList;
 import java.util.List;

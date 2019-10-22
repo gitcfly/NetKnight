@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.widget.BaseAdapter;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -46,7 +47,7 @@ public class DairyImpl implements IDairyPresenter {
         /**
          * 设置描述文字
          */
-        lineChart.setDescription("WIFI流量/KB");
+        lineChart.setContentDescription("WIFI流量/KB");
         /**
          * 获取今日日期
          */
@@ -132,7 +133,8 @@ public class DairyImpl implements IDairyPresenter {
         /**
          * 构建一个LineData  将dataSets放入
          */
-        LineData lineData = new LineData(xValues, dataSets);
+//        LineData lineData = new LineData(xValues, dataSets);
+        LineData lineData = new LineData(dataSets);
         /**
          * 将数据插入
          */
@@ -155,7 +157,7 @@ public class DairyImpl implements IDairyPresenter {
         /**
          * 设置描述文字
          */
-        lineChart.setDescription("移动流量/KB");
+        lineChart.setContentDescription("移动流量/KB");
         /**
          * 获取今日日期
          */
@@ -241,7 +243,8 @@ public class DairyImpl implements IDairyPresenter {
         /**
          * 构建一个LineData  将dataSets放入
          */
-        LineData lineData = new LineData(xValues, dataSets);
+//        LineData lineData = new LineData(xValues, dataSets);
+        LineData lineData = new LineData(dataSets);
         /**
          * 将数据插入
          */
@@ -264,7 +267,7 @@ public class DairyImpl implements IDairyPresenter {
         /**
          * 设置描述文字
          */
-        lineChart.setDescription("WIFI+移动流量/KB");
+        lineChart.setContentDescription("WIFI+移动流量/KB");
         /**
          * 获取今日日期
          */
@@ -384,7 +387,8 @@ public class DairyImpl implements IDairyPresenter {
         /**
          * 构建一个LineData  将dataSets放入
          */
-        LineData lineData = new LineData(xValues, dataSets);
+//        LineData lineData = new LineData(xValues, dataSets);
+        LineData lineData = new LineData(dataSets);
         /**
          * 将数据插入
          */
