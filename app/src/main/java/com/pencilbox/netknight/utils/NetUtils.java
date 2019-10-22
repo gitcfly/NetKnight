@@ -128,7 +128,7 @@ public class NetUtils {
         }
 //        System.out.println("切割的数据为:"+strs[localAddrIndex]+" uid:"+strs[uidIndex]);
 
-        System.out.println("Ip:"+ip+ " Port:"+port+" Uid:"+strs[uidIndex]);
+//        System.out.println("Ip:"+ip+ " Port:"+port+" Uid:"+strs[uidIndex]);
 
 //        EncodeUtils.int2hex(1);
         return Integer.parseInt(strs[uidIndex]);

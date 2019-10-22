@@ -63,18 +63,17 @@ public class TCPOutput extends Thread {
      */
     @Override
     public void run() {
-        Log.d(TAG, "start~");
+        //Log.d(TAG, "start~");
         Packet currentPacket;
         while (NetKnightService.vpnShouldRun) {
             try {
                 //阻塞等到有数据就处理
-                currentPacket = mOutputQueue.poll();
-                Thread.sleep(10);
+                currentPacket = mOutputQueue.take();
                 if (currentPacket == null) {
                     continue;
                 }
             } catch (InterruptedException e) {
-                Log.d(TAG, e.getMessage(), e);
+                //Log.d(TAG, e.getMessage(), e);
                 if (mQuit)
                     return;
                 continue;
@@ -93,15 +92,15 @@ public class TCPOutput extends Thread {
             if (tcb == null) {
                 initTCB(ipAndPort, currentPacket, desAddress, desPort, responseBuffer);
             } else if (currentPacket.tcpHeader.isSYN()) {
-                Log.d(TAG, "重复的SYN");
+//                //Log.d(TAG, "重复的SYN");
                 dealDuplicatedSYN(tcb, ipAndPort, currentPacket, responseBuffer);
             } else if (currentPacket.tcpHeader.isFIN()) {
-                Log.d(TAG, "---FIN---");
+//                //Log.d(TAG, "---FIN---");
                 //结束这条连接咯
                 finishConnect(tcb, ipAndPort, currentPacket, responseBuffer);
                 continue;
             } else if (currentPacket.tcpHeader.isACK()) {
-                Log.d(TAG, "---ACK---");
+//                //Log.d(TAG, "---ACK---");
                 //传递数据咯,一般数据是带ACK的
                 transData(ipAndPort, tcb, currentPacket, payloadBuffer, responseBuffer);
             }
@@ -113,11 +112,15 @@ public class TCPOutput extends Thread {
 
     //连接重置咯,即断开之前的连接
     private void sendRST(TCB tcb, String ipAndPort, int prevPayloadSize, ByteBuffer buffer) {
-        Log.d(TAG, "sendRST");
-        tcb.referencePacket.updateTCPBuffer(buffer, (byte) Packet.TCPHeader.RST, 0, tcb.myAcknowledgementNum + prevPayloadSize, 0);
-        PCapFilter.filterPacket(buffer, tcb.getAppId());
-        mInputQueue.offer(buffer);
-        TCBCachePool.closeTCB(ipAndPort);
+//        //Log.d(TAG, "sendRST");
+        try {
+            tcb.referencePacket.updateTCPBuffer(buffer, (byte) Packet.TCPHeader.RST, 0, tcb.myAcknowledgementNum + prevPayloadSize, 0);
+            PCapFilter.filterPacket(buffer, tcb.getAppId());
+            mInputQueue.put(buffer);
+            TCBCachePool.closeTCB(ipAndPort);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -159,7 +162,11 @@ public class TCPOutput extends Thread {
             PCapFilter.filterPacket(responseBuffer, tcb.getAppId());
         }
         TCBCachePool.closeTCB(ipAndPort);
-        mInputQueue.offer(responseBuffer);
+        try {
+            mInputQueue.put(responseBuffer);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -174,36 +181,36 @@ public class TCPOutput extends Thread {
         synchronized (tcb) {
             if (tcb.tcbStatus == TCB.TCB_STATUS_LAST_ACK) {
                 //关闭通道
-                MyLog.logd(this, "close channel");
+//                //MyLog.logd(this, "close channel");
                 TCBCachePool.closeTCB(ipAndPort);
                 return;
             }
             //无数据的直接ignore了
             if (payloadSize == 0) {
 
-                MyLog.logd(this, "-------ack has no data-------");
+//                //MyLog.logd(this, "-------ack has no data-------");
                 return;
             }
-            MyLog.logd(this, "传递的payloadSize为:" + payloadSize);
+            //MyLog.logd(this, "传递的payloadSize为:" + payloadSize);
             //发送完数据咯,那么就执行真正的数据访问
             SelectionKey outKey = tcb.selectionKey;
             if (outKey == null) {
-                MyLog.logd(this, "outKey 为 null");
+//                //MyLog.logd(this, "outKey 为 null");
                 return;
             }
             //监听读的状态咯
             if (tcb.tcbStatus == TCB.TCB_STATUS_SYN_RECEIVED) {
                 tcb.tcbStatus = TCB.TCB_STATUS_ESTABLISHED;
             } else if (tcb.tcbStatus == TCB.TCB_STATUS_ESTABLISHED) {
-                MyLog.logd(this, "establish ing");
+//                //MyLog.logd(this, "establish ing");
             } else {
-                MyLog.logd(this, "当前tcbStatus为" + tcb.tcbStatus);
-                MyLog.logd(this, "连接还没建立好");
+//                //MyLog.logd(this, "当前tcbStatus为" + tcb.tcbStatus);
+//                //MyLog.logd(this, "连接还没建立好");
                 return;
             }
             SocketChannel outChannel = (SocketChannel) outKey.channel();
             if (outChannel.isConnected() && outChannel.isOpen()) {
-                MyLog.logd(this, "执行写channel操作");
+                //MyLog.logd(this, "执行写channel操作");
                 try {
                     while (dataBuffer.hasRemaining()) {
                         outChannel.write(dataBuffer);
@@ -212,28 +219,32 @@ public class TCPOutput extends Thread {
                     tcb.calculateTransBytes(payloadSize);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    MyLog.logd(this, "write data error");
+                    //MyLog.logd(this, "write data error");
                     //失败就告知连接中断
                     sendRST(tcb, ipAndPort, payloadSize, responseBuffer);
                 }
             } else {
-                MyLog.logd(this, "channel都没准备好");
+                //MyLog.logd(this, "channel都没准备好");
             }
             currentPacket.swapSourceAndDestination();
             tcb.myAcknowledgementNum = currentPacket.tcpHeader.sequenceNumber + payloadSize;
             currentPacket.updateTCPBuffer(responseBuffer, (byte) Packet.TCPHeader.ACK, tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
-            MyLog.logd(this, "transData responseBuffer limit:" + responseBuffer.limit() + " position:" + responseBuffer.position());
+            //MyLog.logd(this, "transData responseBuffer limit:" + responseBuffer.limit() + " position:" + responseBuffer.position());
         }
         PCapFilter.filterPacket(responseBuffer, tcb.getAppId());
         //ack码
-        mInputQueue.offer(responseBuffer);
+        try {
+            mInputQueue.put(responseBuffer);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * 初始化TCB以及相关连接
      */
     private void initTCB(String ipAndPort, Packet referencePacket, InetAddress desAddress, int desPort, ByteBuffer responseBuffer) {
-        Log.d(TAG, "initTcb ...");
+        //Log.d(TAG, "initTcb ...");
         //TODO 找到对应的uid咯
         long passAppId = filterPacket(referencePacket);
         if (passAppId == -1) {
@@ -264,7 +275,7 @@ public class TCPOutput extends Thread {
             if (socketChannel.finishConnect()) {
                 //连接成功,即已经实现握手了,此时虚拟网卡这边也要进行握手
                 //速度很快,都不用监听就完成了
-                Log.d(TAG, "socketChannel连接完成咯");
+                ////Log.d(TAG, "socketChannel连接完成咯");
                 tcb.tcbStatus = TCB.TCB_STATUS_SYN_RECEIVED;
                 referencePacket.updateTCPBuffer(responseBuffer, (byte) (Packet.TCPHeader.SYN | Packet.TCPHeader.ACK), tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
                 tcb.mySequenceNum++;
@@ -278,7 +289,7 @@ public class TCPOutput extends Thread {
                 SelectionKey key = socketChannel.register(mChannelSelector, SelectionKey.OP_CONNECT, ipAndPort);
 //TODO 将selectionKey存储起来咯
                 tcb.selectionKey = key;
-                Log.d(TAG, "socketChannel 注册ing");
+                ////Log.d(TAG, "socketChannel 注册ing");
                 ByteBufferPool.release(responseBuffer);
                 return;
                 //还在连接咯,还没连接成功
@@ -289,7 +300,11 @@ public class TCPOutput extends Thread {
             throw new RuntimeException(e);
         }
         PCapFilter.filterPacket(responseBuffer, tcb.getAppId());
-        mInputQueue.offer(responseBuffer);
+        try {
+            mInputQueue.put(responseBuffer);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -301,7 +316,7 @@ public class TCPOutput extends Thread {
         //TODO 根据域名拦截
         if (BlockingPool.isBlockName) {
             if (filterByDomain(transPacket.ip4Header.destinationAddress.getHostName())) {
-                Log.e(TAG, "数据包因为domainName段被拦截了");
+                //Log.e(TAG, "数据包因为domainName段被拦截了");
                 return -1;
             }
         }
@@ -310,15 +325,15 @@ public class TCPOutput extends Thread {
         //TODO 根据ip段拦截
         if (BlockingPool.isBlockIp) {
             if (filterByIp(transPacket.ip4Header.destinationAddress.getHostAddress())) {
-                Log.e(TAG, "数据包因为IP段被拦截了");
+                //Log.e(TAG, "数据包因为IP段被拦截了");
                 return -1;
             }
         }
 
         int uid = NetUtils.readProcFile(transPacket.tcpHeader.sourcePort);
-        MyLog.logd(this, "uid为:" + uid);
+        //MyLog.logd(this, "uid为:" + uid);
         if (uid < 10000) {
-            Log.e(TAG, "连接失败");
+            //Log.e(TAG, "连接失败");
 //            sendRST();
             return -1;
         }
@@ -328,7 +343,7 @@ public class TCPOutput extends Thread {
         if (appList.size() != 1) {
             return -1;
         }
-        Log.d(TAG, "app id 号为:" + appList.get(0).getId());
+        ////Log.d(TAG, "app id 号为:" + appList.get(0).getId());
         //TODO 根据类型信息进行拦截
         boolean isPass = filterByAppSetting(appList.get(0));
         if (!isPass) {
@@ -359,7 +374,11 @@ public class TCPOutput extends Thread {
                     break;
                 case Constants.ACCESS_TYPE_REMIND:
                     //通知有网络访问信息咯
-                    mAppCacheQueue.offer(app);
+                    try {
+                        mAppCacheQueue.put(app);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return false;
                 default:
                     break;
@@ -376,7 +395,11 @@ public class TCPOutput extends Thread {
                     break;
                 case Constants.ACCESS_TYPE_REMIND:
                     //通知有网络访问信息咯
-                    mAppCacheQueue.offer(app);
+                    try {
+                        mAppCacheQueue.put(app);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     return false;
                 default:
                     break;
@@ -393,8 +416,8 @@ public class TCPOutput extends Thread {
      * @return true 拦截成功
      */
     private boolean filterByDomain(String domainName) {
-        Log.d(TAG, "--------filterByDomain---------");
-        Log.d(TAG, "DomainName:" + domainName);
+        ////Log.d(TAG, "--------filterByDomain---------");
+        ////Log.d(TAG, "DomainName:" + domainName);
         ArrayList<BlockName> blockNames = BlockingPool.getNameList();
         for (int i = 0; i < blockNames.size(); i++) {
             if (blockNames.get(i).getcName().startsWith(domainName)) {
@@ -414,8 +437,8 @@ public class TCPOutput extends Thread {
      */
     private boolean filterByIp(String hostAddress) {
         String[] ip = hostAddress.split("\\.");
-        Log.d(TAG, "------filterByIp---------");
-        Log.d(TAG, "hostAddress:" + hostAddress);
+        ////Log.d(TAG, "------filterByIp---------");
+        ////Log.d(TAG, "hostAddress:" + hostAddress);
         ArrayList<BlockIp> blockIps = BlockingPool.getIpList();
         for (int i = 0; i < blockIps.size(); i++) {
             BlockIp blockIp = blockIps.get(i);

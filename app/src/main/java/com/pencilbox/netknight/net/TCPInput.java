@@ -54,49 +54,25 @@ public class TCPInput extends Thread {
      */
     @Override
     public void run() {
-
-        Log.d(TAG, "TCPInput start");
-
-
+        //Log.d(TAG, "TCPInput start");
         while (NetKnightService.vpnShouldRun) {
             try {
-                Thread.sleep(10);
-
-//                ByteBuffer readBuffer = mOutputQueue.poll();
-
-//                Log.d(TAG,Thread.currentThread().getName()+" runing");
-
-
-            } catch (InterruptedException e) {
-//                e.printStackTrace();
-
-                Log.d(TAG, "Stop");
-                if (mQuit)
-                    return;
-                continue;
-
-            }
-
-            try {
                 int readyChannels = mChannelSelector.select();
-
-//                Log.d(TAG,"完成select");
+//                //Log.d(TAG,"完成select");
                 if (readyChannels == 0) {
                     continue;
                 }
-
                 Set selectionKeys = mChannelSelector.selectedKeys();
                 Iterator<SelectionKey> keyIterator = selectionKeys.iterator();
                 while (keyIterator.hasNext()) {
                     SelectionKey key = keyIterator.next();
-
                     //将ipAndPort从队列中取出来,若不存在,说明该调度已经结束啦
                     String ipAndPort = (String) key.attachment();
                     //直接将
                     TCB tcb = TCBCachePool.getTCB(ipAndPort);
                     if (tcb == null) {
                         //通道关闭咯
-                        Log.d(TAG, "channel is closed:" + ipAndPort);
+                        //Log.d(TAG, "channel is closed:" + ipAndPort);
                         key.channel().close();
                         keyIterator.remove();
                         continue;
@@ -105,23 +81,23 @@ public class TCPInput extends Thread {
 
                     if (key.isConnectable()) {
 
-                        Log.d(TAG, "channel is connectable");
+                        //Log.d(TAG, "channel is connectable");
                         buildConnection(tcb, key);
 
 
                     } else if (key.isAcceptable()) {
-//                        Log.d(TAG,"channel is acceptable");
+//                        //Log.d(TAG,"channel is acceptable");
 
                     } else if (key.isReadable()) {
                         //感兴趣是这里才有咯?
-//                        Log.d(TAG,"channel is readable");
+//                        //Log.d(TAG,"channel is readable");
 
 
                         transData(tcb, key);
 
 
                     } else if (key.isWritable()) {
-//                        Log.d(TAG,"channel is writable");
+//                        //Log.d(TAG,"channel is writable");
                     }
                     keyIterator.remove();
 
@@ -148,16 +124,16 @@ public class TCPInput extends Thread {
 
 //        if(tcb.tcbStatus != TCB.TCB_STATUS_ESTABLISHED){
 //
-//            MyLog.logd(this,"还未建立成功");
+//            //Log.logd(this,"还未建立成功");
 //            return ;
 //        }
 
         SocketChannel channel = (SocketChannel) key.channel();
 
         ByteBuffer responseBuffer = ByteBufferPool.acquire();
-//        MyLog.logd(this,"Position before,responseBuffer: Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
+//        //Log.logd(this,"Position before,responseBuffer: Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
 
-//        MyLog.logd(this,"Position after,responseBuffer: Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
+//        //Log.logd(this,"Position after,responseBuffer: Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
         int readBytes = 0;
 
         //这样实际数据就能写道里面去了
@@ -173,7 +149,7 @@ public class TCPInput extends Thread {
         }
 
 //        if(responseBuffer==null){
-//            MyLog.logd(this,"responseBuffer 为空");
+//            //Log.logd(this,"responseBuffer 为空");
 //            return;
 //        }
 
@@ -184,7 +160,7 @@ public class TCPInput extends Thread {
 
             Packet responsePacket = tcb.referencePacket;
 
-            MyLog.logd(this, "获取回来的数据大小为" + readBytes);
+            //Log.logd(this, "获取回来的数据大小为" + readBytes);
             if (readBytes == -1) {
                 //执行完咯,发送完成的包咯
                 key.interestOps(0);//不感兴趣咯
@@ -193,34 +169,37 @@ public class TCPInput extends Thread {
                 tcb.tcbStatus = TCB.TCB_STATUS_LAST_ACK;
 
 
-//            MyLog.logd(this,"responseBuffer:Before FIN Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
+//            //Log.logd(this,"responseBuffer:Before FIN Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
 
 
                 responsePacket.updateTCPBuffer(responseBuffer, (byte) (Packet.TCPHeader.FIN | Packet.TCPHeader.ACK), tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
 
 
-//            MyLog.logd(this,"responseBuffer:After FIN Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
+//            //Log.logd(this,"responseBuffer:After FIN Limit:"+responseBuffer.limit()+" position:"+responseBuffer.position());
 
 
                 tcb.mySequenceNum++;
 
                 PCapFilter.filterPacket(responseBuffer, tcb.getAppId());
-                mOutputQueue.offer(responseBuffer);
-
-                MyLog.logd(this, "数据读取完毕");
+                try {
+                    mOutputQueue.put(responseBuffer);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //Log.logd(this, "数据读取完毕");
                 return;
             }
 
             tcb.calculateTransBytes(readBytes);
 
 
-            MyLog.logd(this, "responseBuffer:Before Limit:" + responseBuffer.limit() + " position:" + responseBuffer.position());
+            //Log.logd(this, "responseBuffer:Before Limit:" + responseBuffer.limit() + " position:" + responseBuffer.position());
 
 
-            Log.d(TAG, "sequenceNum" + tcb.mySequenceNum);
+            //Log.d(TAG, "sequenceNum" + tcb.mySequenceNum);
 
 
-            MyLog.logd(this, "responseBuffer:After Limit:" + responseBuffer.limit() + " position:" + responseBuffer.position());
+            //Log.logd(this, "responseBuffer:After Limit:" + responseBuffer.limit() + " position:" + responseBuffer.position());
 
 
             responsePacket.updateTCPBuffer(responseBuffer, (byte) (Packet.TCPHeader.ACK | Packet.TCPHeader.PSH), tcb.mySequenceNum, tcb.myAcknowledgementNum, readBytes);
@@ -235,8 +214,11 @@ public class TCPInput extends Thread {
 
         }
         PCapFilter.filterPacket(responseBuffer, tcb.getAppId());
-        mOutputQueue.offer(responseBuffer);
-
+        try {
+            mOutputQueue.put(responseBuffer);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -251,7 +233,7 @@ public class TCPInput extends Thread {
 
         try {
             if (!((SocketChannel) key.channel()).finishConnect()) {
-                MyLog.logd(this, "onConnectState 未建立完成");
+                //Log.logd(this, "onConnectState 未建立完成");
                 return;
             }
 
@@ -272,9 +254,11 @@ public class TCPInput extends Thread {
         tcb.mySequenceNum++;
 
         PCapFilter.filterPacket(responseBuffer, tcb.getAppId());
-
-        mOutputQueue.offer(responseBuffer);
-
+        try {
+            mOutputQueue.put(responseBuffer);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

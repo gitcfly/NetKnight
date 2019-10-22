@@ -161,15 +161,15 @@ public class NetKnightService extends VpnService implements Runnable {
                 }
                 int inputSize = vpnInput.read(buffer2Net);
                 if (inputSize > 0) {
-                    MyLog.logd(this, "-----readData:-------size:" + inputSize);
+//                    MyLog.logd(this, "-----readData:-------size:" + inputSize);
                     //flip切换状态,由写状态转换成可读状态
                     buffer2Net.flip();
                     //从应用中发送的包
                     Packet packet2net = new Packet(buffer2Net);
-                    MyLog.logd(this, "--------data read----------size:" + packet2net.getPayloadSize());
-                    MyLog.logd(this, packet2net.toString());
+//                    MyLog.logd(this, "--------data read----------size:" + packet2net.getPayloadSize());
+//                    MyLog.logd(this, packet2net.toString());
                     if (packet2net.isTCP()) {
-                        MyLog.logd(this, "发送数据包  TCP");
+//                        MyLog.logd(this, "发送数据包  TCP");
                         //目前支持TCP
                         InetAddress desAddress = packet2net.ip4Header.destinationAddress;
                         int sourcePort = packet2net.tcpHeader.sourcePort;
@@ -188,11 +188,19 @@ public class NetKnightService extends VpnService implements Runnable {
                             buffer2Net.position(curPostion);
                             buffer2Net.limit(curLimit);
                         }
-                        mOutputQueue.offer(packet2net);
+                        try {
+                            mOutputQueue.put(packet2net);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         isDataSend = true;
                     } else if (packet2net.isUDP()) {
-                        MyLog.logd(this, "发送数据包  UDP");
-                        udpOutputQueue.offer(packet2net);
+                        MyLog.logd(this, "发送数据包 UDP:" + packet2net.ip4Header.toString());
+                        try {
+                            udpOutputQueue.put(packet2net);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         isDataSend = true;
                     } else {
                         MyLog.logd(this,"暂时不支持其他类型数据!!");
@@ -205,7 +213,7 @@ public class NetKnightService extends VpnService implements Runnable {
                 }
                 //可减少内存抖动??
                 if(!isDataSend) {
-                    Thread.sleep(15);
+                    Thread.sleep(10);
                 }
             }
         } catch (IOException e) {

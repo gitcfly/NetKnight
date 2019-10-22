@@ -158,19 +158,15 @@ public class Packet {
         buffer.position(0);
         fillHeader(buffer);
         backingBuffer = buffer;
-
         int udpTotalLength = UDP_HEADER_SIZE + payloadSize;
         backingBuffer.putShort(IP4_HEADER_SIZE + 4, (short) udpTotalLength);
         udpHeader.length = udpTotalLength;
-
         // Disable UDP checksum validation
         backingBuffer.putShort(IP4_HEADER_SIZE + 6, (short) 0);
         udpHeader.checksum = 0;
-
         int ip4TotalLength = IP4_HEADER_SIZE + udpTotalLength;
         backingBuffer.putShort(2, (short) ip4TotalLength);
         ip4Header.totalLength = ip4TotalLength;
-
         updateIP4Checksum();
     }
 

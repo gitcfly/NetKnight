@@ -23,7 +23,7 @@ public class Net2Device extends Thread {
         while (NetKnightService.vpnShouldRun) {
             try {
                 //将数据返回到应用中
-                ByteBuffer buffer4Net = mInputQueue.poll();
+                ByteBuffer buffer4Net = mInputQueue.take();
                 if (buffer4Net != null) {
                     //将limit=position position = 0 开始读操作
                     buffer4Net.flip();

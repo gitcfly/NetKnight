@@ -63,9 +63,12 @@ public class UDPOutput extends Thread {
                 Packet currentPacket;
                 // TODO: Block when not connected
                 do {
-                    currentPacket = outputQueue.poll();
-                    if (currentPacket != null)
+                    currentPacket = outputQueue.take();
+                    if (currentPacket != null) {
+                        Log.d(TAG, "发送网络 UPD");
                         break;
+                    }
+                    Log.e(TAG, "阻塞队列失效 outputQueue.poll()==0");
                 } while (!currentThread.isInterrupted());
                 InetAddress destinationAddress = currentPacket.ip4Header.destinationAddress;
                 int destinationPort = currentPacket.udpHeader.destinationPort;
@@ -74,6 +77,7 @@ public class UDPOutput extends Thread {
                 DatagramChannel outputChannel = channelCache.get(ipAndPort);
                 if (outputChannel == null) {
                     outputChannel = DatagramChannel.open();
+                    outputChannel.configureBlocking(false);
                     vpnService.protect(outputChannel.socket());
                     try {
                         outputChannel.connect(new InetSocketAddress(destinationAddress, destinationPort));
@@ -83,7 +87,6 @@ public class UDPOutput extends Thread {
                         ByteBufferPool.release(currentPacket.backingBuffer);
                         continue;
                     }
-                    outputChannel.configureBlocking(false);
                     currentPacket.swapSourceAndDestination();
                     selector.wakeup();
                     outputChannel.register(selector, SelectionKey.OP_READ, currentPacket);
