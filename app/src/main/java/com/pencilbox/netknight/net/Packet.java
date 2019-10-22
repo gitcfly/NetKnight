@@ -107,7 +107,6 @@ public class Packet {
         InetAddress newSourceAddress = ip4Header.destinationAddress;
         ip4Header.destinationAddress = ip4Header.sourceAddress;
         ip4Header.sourceAddress = newSourceAddress;
-
         if (isUDP) {
             int newSourcePort = udpHeader.destinationPort;
             udpHeader.destinationPort = udpHeader.sourcePort;

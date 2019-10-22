@@ -19,6 +19,8 @@ package com.pencilbox.netknight.net;
 import android.net.VpnService;
 import android.util.Log;
 
+import com.pencilbox.netknight.service.NetKnightService;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -35,7 +37,7 @@ public class UDPOutput extends Thread {
     private static final int MAX_CACHE_SIZE = 50;
 
     private VpnService vpnService;
-    private LinkedBlockingQueue<Packet> deviceToNetworkUDPQueue;
+    private LinkedBlockingQueue<Packet> outputQueue;
     private Selector selector;
 
     private LRUCache<String, DatagramChannel> channelCache =
@@ -46,8 +48,8 @@ public class UDPOutput extends Thread {
                 }
             });
 
-    public UDPOutput(LinkedBlockingQueue<Packet> inputQueue, Selector selector, VpnService vpnService) {
-        this.deviceToNetworkUDPQueue = inputQueue;
+    public UDPOutput(LinkedBlockingQueue<Packet> outputQueue, Selector selector, VpnService vpnService) {
+        this.outputQueue = outputQueue;
         this.selector = selector;
         this.vpnService = vpnService;
     }
@@ -56,12 +58,12 @@ public class UDPOutput extends Thread {
     public void run() {
         Log.i(TAG, "Started");
         Thread currentThread = Thread.currentThread();
-        while (!currentThread.isInterrupted()) {
+        while (NetKnightService.vpnShouldRun) {
             try {
                 Packet currentPacket;
                 // TODO: Block when not connected
                 do {
-                    currentPacket = deviceToNetworkUDPQueue.poll();
+                    currentPacket = outputQueue.poll();
                     if (currentPacket != null)
                         break;
                 } while (!currentThread.isInterrupted());

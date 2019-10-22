@@ -3,6 +3,7 @@ package com.pencilbox.netknight.net;
 import android.util.Log;
 
 import com.pencilbox.netknight.pcap.PCapFilter;
+import com.pencilbox.netknight.service.NetKnightService;
 import com.pencilbox.netknight.utils.MyLog;
 
 import java.io.IOException;
@@ -35,7 +36,6 @@ public class TCPInput extends Thread {
     public void quit() {
         mQuit = true;
         interrupt();
-
     }
 
 
@@ -58,7 +58,7 @@ public class TCPInput extends Thread {
         Log.d(TAG, "TCPInput start");
 
 
-        while (true) {
+        while (NetKnightService.vpnShouldRun) {
             try {
                 Thread.sleep(10);
 

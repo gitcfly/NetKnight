@@ -18,6 +18,8 @@ package com.pencilbox.netknight.net;
 
 import android.util.Log;
 
+import com.pencilbox.netknight.service.NetKnightService;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
@@ -31,10 +33,10 @@ public class UDPInput extends Thread {
     private static final int HEADER_SIZE = Packet.IP4_HEADER_SIZE + Packet.UDP_HEADER_SIZE;
 
     private Selector selector;
-    private LinkedBlockingQueue<ByteBuffer> networkToDeviceQueue;
+    private LinkedBlockingQueue<ByteBuffer> inputQueue;
 
-    public UDPInput(LinkedBlockingQueue<ByteBuffer> outputQueue, Selector selector) {
-        this.networkToDeviceQueue = outputQueue;
+    public UDPInput(LinkedBlockingQueue<ByteBuffer> inputQueue, Selector selector) {
+        this.inputQueue = inputQueue;
         this.selector = selector;
     }
 
@@ -42,7 +44,7 @@ public class UDPInput extends Thread {
     public void run() {
         Log.i(TAG, "Started");
         Thread currentThread = Thread.currentThread();
-        while (!currentThread.isInterrupted()) {
+        while (NetKnightService.vpnShouldRun) {
             try {
                 int readyChannels = selector.select();
                 if (readyChannels == 0) {
@@ -64,7 +66,7 @@ public class UDPInput extends Thread {
                         Packet referencePacket = (Packet) key.attachment();
                         referencePacket.updateUDPBuffer(receiveBuffer, readBytes);
                         receiveBuffer.position(HEADER_SIZE + readBytes);
-                        networkToDeviceQueue.offer(receiveBuffer);
+                        inputQueue.offer(receiveBuffer);
                     }
                 }
             } catch (Exception e) {

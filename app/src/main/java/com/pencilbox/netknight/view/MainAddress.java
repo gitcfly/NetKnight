@@ -23,6 +23,7 @@ import com.pencilbox.netknight.R;
 import com.pencilbox.netknight.net.BlockingPool;
 import com.pencilbox.netknight.presentor.IBlockingDomainImpl;
 import com.pencilbox.netknight.presentor.IBlockingDomainPresenter;
+import com.pencilbox.netknight.service.NetKnightService;
 
 
 public class MainAddress extends Fragment implements IBlockingAddressView {

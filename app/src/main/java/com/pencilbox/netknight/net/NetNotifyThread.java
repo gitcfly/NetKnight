@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.pencilbox.netknight.R;
 import com.pencilbox.netknight.model.App;
+import com.pencilbox.netknight.service.NetKnightService;
 import com.pencilbox.netknight.view.MainTabbed;
 
 import java.util.HashMap;
@@ -62,7 +63,6 @@ public class NetNotifyThread extends Thread {
     public NetNotifyThread(Context context, BlockingQueue<App> accessApps) {
         mAccessApp = (LinkedBlockingQueue<App>) accessApps;
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         mContext = context;
         mHasNotifiedAppMap = new HashMap<>();
     }
@@ -72,8 +72,7 @@ public class NetNotifyThread extends Thread {
 //        super.run();
         Log.d(TAG, "start");
         App app;
-        while (true) {
-
+        while (NetKnightService.vpnShouldRun) {
             try {
                 Thread.sleep(10);
                 app = mAccessApp.take();
@@ -101,7 +100,7 @@ public class NetNotifyThread extends Thread {
 
     public void showNotification(String appName) {
 
-        mBuilder = new NotificationCompat.Builder(mContext);
+        mBuilder = new NotificationCompat.Builder(mContext, "default");
         mBuilder.setContentTitle("网络访问").setContentText(appName + "的访问已被拦截")
 //                .setNumber(number)// 显示数量
                 .setTicker(appName + "尝试访问网络..")// 通知首次出现在通知栏，带上升动画效果的

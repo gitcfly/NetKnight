@@ -63,17 +63,13 @@ public class MainApp extends Fragment implements View.OnClickListener, IAppInfoV
                 if (getActivity() instanceof MainTabbed) {
 
                     if (isChecked) {
-
+                        NetKnightService.vpnShouldRun = true;
                         ((MainTabbed) getActivity()).startVpnService();
-
                     } else {
-
+                        NetKnightService.vpnShouldRun = false;
                         ((MainTabbed) getActivity()).stopVpnService();
-
                     }
-
                 } else {
-
                     Log.e("MainApp", "--onCheckedChanged-- activity is not MainTabbed");
                 }
 
