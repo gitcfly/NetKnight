@@ -27,10 +27,10 @@ public class AppInfoAdapter extends BaseAdapter {
     LayoutInflater inflater = null;
 
     //存放用户选中的item咯,key 为 appId ,value 为 用户选中的position
-    private Map<Long,Integer> mWiflSelectedMap;
-    private Map<Long,Integer> mMobileSelectedMap;
+    private Map<Long, Integer> mWiflSelectedMap;
+    private Map<Long, Integer> mMobileSelectedMap;
 
-    public List<App> getDatas(){
+    public List<App> getDatas() {
         return list_appinfo;
     }
 
@@ -42,10 +42,10 @@ public class AppInfoAdapter extends BaseAdapter {
         list_appinfo.addAll(appLists);
 
 
-        for(int i=0;i<appLists.size();i++){
+        for (int i = 0; i < appLists.size(); i++) {
 
-            mWiflSelectedMap.put(appLists.get(i).getId(),appLists.get(i).getWifiType());
-            mMobileSelectedMap.put( appLists.get(i).getId(),appLists.get(i).getMobileDataType());
+            mWiflSelectedMap.put(appLists.get(i).getId(), appLists.get(i).getWifiType());
+            mMobileSelectedMap.put(appLists.get(i).getId(), appLists.get(i).getMobileDataType());
 
         }
 
@@ -81,11 +81,9 @@ public class AppInfoAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.app_items, null);
 
 
-
             holder = new ViewHolder(view);
 //            holder.wifi_spinner = (Spinner) view.findViewById(R.id.wifi_spinner);
 //            holder.celluar_spinner = (Spinner) view.findViewById(R.id.celluar_spinner);
-
 
 
             //我咋监听到是哪一个信息呢
@@ -93,9 +91,8 @@ public class AppInfoAdapter extends BaseAdapter {
             holder.wifi_spinner.setAdapter(adapter);
             holder.celluar_spinner.setAdapter(adapter);
 
-            holder.celluar_spinner.setOnItemSelectedListener(new OnSpinnerItemListener(holder.celluar_spinner,false));
-            holder.wifi_spinner.setOnItemSelectedListener(new OnSpinnerItemListener(holder.wifi_spinner,true));
-
+            holder.celluar_spinner.setOnItemSelectedListener(new OnSpinnerItemListener(holder.celluar_spinner, false));
+            holder.wifi_spinner.setOnItemSelectedListener(new OnSpinnerItemListener(holder.wifi_spinner, true));
 
 
             view.setTag(holder);
@@ -120,11 +117,11 @@ public class AppInfoAdapter extends BaseAdapter {
         holder.wifi_spinner.setSelection(mWiflSelectedMap.get(appInfo.getId()));
 
 
-        if(appInfo.isAccessVpn()){
+        if (appInfo.isAccessVpn()) {
             holder.wifi_spinner.setVisibility(View.VISIBLE);
-           holder.celluar_spinner.setVisibility(View.VISIBLE);
+            holder.celluar_spinner.setVisibility(View.VISIBLE);
             holder.tv_vpn_through.setVisibility(View.GONE);
-        }else{
+        } else {
             holder.tv_vpn_through.setVisibility(View.VISIBLE);
             holder.wifi_spinner.setVisibility(View.GONE);
             holder.celluar_spinner.setVisibility(View.GONE);
@@ -137,12 +134,12 @@ public class AppInfoAdapter extends BaseAdapter {
     /**
      * spinner的Item的监听器
      */
-    private class OnSpinnerItemListener implements AdapterView.OnItemSelectedListener{
+    private class OnSpinnerItemListener implements AdapterView.OnItemSelectedListener {
 
-        Spinner mSpinner ;
+        Spinner mSpinner;
         boolean isWifi = true;
 
-        public OnSpinnerItemListener(Spinner spinner,boolean isWifi){
+        public OnSpinnerItemListener(Spinner spinner, boolean isWifi) {
             mSpinner = spinner;
             this.isWifi = isWifi;
         }
@@ -152,22 +149,21 @@ public class AppInfoAdapter extends BaseAdapter {
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
 
-
 //            Log.d("AppInfoAdapter","appId:"+mSpinner.getTag()+" position"+position);
             //仅仅是为了存储用户选择了position的信息
             App appInfo = (App) mSpinner.getTag();
 
-            if(isWifi){
-                mWiflSelectedMap.put(appInfo.getId(),position);
+            if (isWifi) {
+                mWiflSelectedMap.put(appInfo.getId(), position);
 
-                if(appInfo.getWifiType()!=position){
+                if (appInfo.getWifiType() != position) {
                     appInfo.setWifiType(position);
                     appInfo.save();
                 }
 
-            }else{
-                mMobileSelectedMap.put(appInfo.getId(),position);
-                if(appInfo.getMobileDataType()!=position){
+            } else {
+                mMobileSelectedMap.put(appInfo.getId(), position);
+                if (appInfo.getMobileDataType() != position) {
                     appInfo.setMobileDataType(position);
                     appInfo.save();
                 }
@@ -181,18 +177,13 @@ public class AppInfoAdapter extends BaseAdapter {
         public void onNothingSelected(AdapterView<?> parent) {
 
 
-
-
-
-
         }
     }
 
     class ViewHolder {
         ImageView appIcon;
-        TextView tvAppLabel, tvPkgName,tv_vpn_through;
-        Spinner wifi_spinner,celluar_spinner;
-
+        TextView tvAppLabel, tvPkgName, tv_vpn_through;
+        Spinner wifi_spinner, celluar_spinner;
 
 
         public ViewHolder(View view) {
@@ -200,7 +191,7 @@ public class AppInfoAdapter extends BaseAdapter {
             this.tvAppLabel = (TextView) view.findViewById(R.id.tvAppLabel);
             this.tvPkgName = (TextView) view.findViewById(R.id.tvPkgName);
             this.wifi_spinner = (Spinner) view.findViewById(R.id.wifi_spinner);
-            this.celluar_spinner= (Spinner) view.findViewById(R.id.celluar_spinner);
+            this.celluar_spinner = (Spinner) view.findViewById(R.id.celluar_spinner);
             this.tv_vpn_through = (TextView) view.findViewById(R.id.tv_vpn_through);
         }
     }

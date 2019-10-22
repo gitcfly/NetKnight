@@ -6,289 +6,271 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 
-
-
-
 /**
  * Class for creating capture files in libcap format.<br>
- * 
+ * <p>
  * if using java version less then 1.5 then the packet time resolution will
  * be in msec and no nanosec.<br>
- * 
- * @since java 1.5
- * @author roni bar yanai
  *
+ * @author roni bar yanai
+ * @since java 1.5
  */
-public class PCapFileWriter implements CaptureFileWriter
-{
-	private static final int MAX_PACKET_SIZE = 65356;
+public class PCapFileWriter implements CaptureFileWriter {
+    private static final int MAX_PACKET_SIZE = 65356;
 
-	public static final long DEFAULT_LIMIT = 100000000000l;
+    public static final long DEFAULT_LIMIT = 100000000000l;
 
-	// limit the file size
-	private long myLimit = DEFAULT_LIMIT;
+    // limit the file size
+    private long myLimit = DEFAULT_LIMIT;
 
-	// the out stream
-	private OutputStream myOutStrm = null;
+    // the out stream
+    private OutputStream myOutStrm = null;
 
-	private boolean _isopened = false;
+    private boolean _isopened = false;
 
-	// used to calculate the packets time.
-	private long myStartTime = 0;
+    // used to calculate the packets time.
+    private long myStartTime = 0;
 
-	// total ~bytes written so far.
-	private long myTotalBytes = 0;
+    // total ~bytes written so far.
+    private long myTotalBytes = 0;
 
-	private boolean isAboveJave1_4 = true;
+    private boolean isAboveJave1_4 = true;
 
-	/**
-	 * open new file
-	 * @param file
-	 * @throws IOException - on file creation failure.
-	 */
-	public PCapFileWriter(File file) throws IOException
-	{
-		this(file, false);
-	}
-	
-	/**
-	 * open new file
-	 * @param file - the file name
-	 * @throws IOException - on file creation failure.
-	 */
-	public PCapFileWriter(String file) throws IOException
-	{
-		this(new File(file), false);
-	}
+    /**
+     * open new file
+     *
+     * @param file
+     * @throws IOException - on file creation failure.
+     */
+    public PCapFileWriter(File file) throws IOException {
+        this(file, false);
+    }
 
-	/**
-	 * open new file
-	 * @param file
-	 * @param append 
-	 * @throws IOException - on file creation failure.
-	 */
-	public PCapFileWriter(File file, boolean append) throws IOException
-	{
-		if (file == null) throw new IllegalArgumentException("Got null file object");
+    /**
+     * open new file
+     *
+     * @param file - the file name
+     * @throws IOException - on file creation failure.
+     */
+    public PCapFileWriter(String file) throws IOException {
+        this(new File(file), false);
+    }
 
-		init(file, append);
-		myStartTime = getNanoTime();
-	}
+    /**
+     * open new file
+     *
+     * @param file
+     * @param append
+     * @throws IOException - on file creation failure.
+     */
+    public PCapFileWriter(File file, boolean append) throws IOException {
+        if (file == null) throw new IllegalArgumentException("Got null file object");
 
-	/**
-	 * open new file
-	 * @param thefile
-	 * @param thelimit - max bytes
-	 * @throws IOException - on file creation failure.
-	 */
-	public PCapFileWriter(File thefile, long thelimit) throws IOException
-	{
-		this(thefile);
-		myLimit = thelimit;
-	}
-	
-	/**
-	 * write to provided output stream.
-	 * @param outStream
-	 * @throws IOException
-	 */
-	public PCapFileWriter(OutputStream outStream) throws IOException
-	{
-		init(outStream);
-	}
-	
-	/**
-	 * set java version > 1.4
-	 * @param isAboveJave1_4
-	 */
-	public void setAboveJave1_4(boolean isAboveJave1_4)
-	{
-		this.isAboveJave1_4 = isAboveJave1_4;
-	}
+        init(file, append);
+        myStartTime = getNanoTime();
+    }
 
-	/**
-	 * 
-	 * @return time stamp in nano seconds
-	 */
-	private long getNanoTime()
-	{
-		if (isAboveJave1_4)
-		{
-			return System.nanoTime();
-		}
-		else
-		{
-			return System.currentTimeMillis() * 1000000;
-		}
-	}
+    /**
+     * open new file
+     *
+     * @param thefile
+     * @param thelimit - max bytes
+     * @throws IOException - on file creation failure.
+     */
+    public PCapFileWriter(File thefile, long thelimit) throws IOException {
+        this(thefile);
+        myLimit = thelimit;
+    }
 
-	/**
-	 * open the out stream and write the cap header.
-	 * @param file
-	 * @throws IOException
-	 */
-	private void init(File file, boolean append) throws IOException
-	{
-		boolean putHdr = !file.exists() || !append;
+    /**
+     * write to provided output stream.
+     *
+     * @param outStream
+     * @throws IOException
+     */
+    public PCapFileWriter(OutputStream outStream) throws IOException {
+        init(outStream);
+    }
 
-		myOutStrm = new FileOutputStream(file, append);
+    /**
+     * set java version > 1.4
+     *
+     * @param isAboveJave1_4
+     */
+    public void setAboveJave1_4(boolean isAboveJave1_4) {
+        this.isAboveJave1_4 = isAboveJave1_4;
+    }
 
-		// put hdr only if not appending or file not exits (new file).
-		if (putHdr)
-		{
-			PCapFileHeader hdr = new PCapFileHeader();
-			myOutStrm.write(hdr.getAsByteArray());
-		}
-		_isopened = true;
+    /**
+     * @return time stamp in nano seconds
+     */
+    private long getNanoTime() {
+        if (isAboveJave1_4) {
+            return System.nanoTime();
+        } else {
+            return System.currentTimeMillis() * 1000000;
+        }
+    }
 
-		myTotalBytes += PCapFileHeader.HEADER_SIZE;
-	}
-	
-	private void init(OutputStream out) throws IOException
-	{
-		myOutStrm = out;
+    /**
+     * open the out stream and write the cap header.
+     *
+     * @param file
+     * @throws IOException
+     */
+    private void init(File file, boolean append) throws IOException {
+        boolean putHdr = !file.exists() || !append;
 
-		// put hdr only if not appending or file not exits (new file).
-		PCapFileHeader hdr = new PCapFileHeader();
-		myOutStrm.write(hdr.getAsByteArray());
-		
-		_isopened = true;
+        myOutStrm = new FileOutputStream(file, append);
 
-		myTotalBytes += PCapFileHeader.HEADER_SIZE;
-	}
-	
-	/**
-	 * add packet to already opened cap.
-	 * if close method was called earlier then will not add it.
-	 * @param thepkt
-	 * @param time - time offset in micro sec 
-	 * @return true if packet added and false otherwise
-	 * @throws IOException 
-	 * @throws IOException
-	 */
-	public boolean addPacket(byte[] thepkt,long time) throws IOException
-	{
+        // put hdr only if not appending or file not exits (new file).
+        if (putHdr) {
+            PCapFileHeader hdr = new PCapFileHeader();
+            myOutStrm.write(hdr.getAsByteArray());
+        }
+        _isopened = true;
 
-		if (thepkt == null || !_isopened || myTotalBytes > myLimit) return false;
+        myTotalBytes += PCapFileHeader.HEADER_SIZE;
+    }
 
-		PCapPacketHeader hder = new PCapPacketHeader();
+    private void init(OutputStream out) throws IOException {
+        myOutStrm = out;
 
-		//14byte是以太帧头信息
-		int sizeOfPkt = thepkt.length + 14;
+        // put hdr only if not appending or file not exits (new file).
+        PCapFileHeader hdr = new PCapFileHeader();
+        myOutStrm.write(hdr.getAsByteArray());
+
+        _isopened = true;
+
+        myTotalBytes += PCapFileHeader.HEADER_SIZE;
+    }
+
+    /**
+     * add packet to already opened cap.
+     * if close method was called earlier then will not add it.
+     *
+     * @param thepkt
+     * @param time   - time offset in micro sec
+     * @return true if packet added and false otherwise
+     * @throws IOException
+     * @throws IOException
+     */
+    public boolean addPacket(byte[] thepkt, long time) throws IOException {
+
+        if (thepkt == null || !_isopened || myTotalBytes > myLimit) return false;
+
+        PCapPacketHeader hder = new PCapPacketHeader();
+
+        //14byte是以太帧头信息
+        int sizeOfPkt = thepkt.length + 14;
 
 
+        hder.setTimeValMsec32Uint((time) % 1000000);
+        hder.setTimeValSec32Uint(time / 1000000l);
+        hder.setPktlenUint32(sizeOfPkt);
+        hder.setCaplen32Uint(sizeOfPkt);
 
-		hder.setTimeValMsec32Uint((time ) % 1000000);
-		hder.setTimeValSec32Uint(time / 1000000l);
-		hder.setPktlenUint32(sizeOfPkt);
-		hder.setCaplen32Uint(sizeOfPkt);
+        if (sizeOfPkt > MAX_PACKET_SIZE)
+            throw new IOException("Got illeagl packet size : " + thepkt.length);
 
-		if (sizeOfPkt > MAX_PACKET_SIZE)
-			throw new IOException("Got illeagl packet size : "+thepkt.length);
-		
-		myOutStrm.write(hder.getAsByteArray());
-		myOutStrm.write(createFrameHeader());
-		myOutStrm.write(thepkt);
+        myOutStrm.write(hder.getAsByteArray());
+        myOutStrm.write(createFrameHeader());
+        myOutStrm.write(thepkt);
 
-		myTotalBytes += sizeOfPkt + PCapPacketHeader.HEADER_SIZE;
+        myTotalBytes += sizeOfPkt + PCapPacketHeader.HEADER_SIZE;
 
-		return true;
-	
-		
-	}
-
-	/**
-	 * add packet to alreay opened cap.
-	 * if close method was called earlier then will not add it.
-	 * @param thepkt
-	 * @return true if packet added and false otherwise
-	 * @throws IOException
-	 */
-	public boolean addPacket(byte[] thepkt) throws IOException
-	{
-		if (thepkt == null || !_isopened || myTotalBytes > myLimit) return false;
-
-		PCapPacketHeader hder = new PCapPacketHeader();
-
-		long gap = getNanoTime() - myStartTime; // the gap since start in nano sec
-
-		//14byte是以太帧头信息
-		int sizeOfPkt = thepkt.length + 14;
-
-		hder.setTimeValMsec32Uint((gap / 1000) % 1000000);
-		hder.setTimeValSec32Uint(gap / 1000000000l);
-		hder.setPktlenUint32(sizeOfPkt);
-		hder.setCaplen32Uint(sizeOfPkt);
-
-		if (sizeOfPkt > MAX_PACKET_SIZE)
-			throw new IOException("Got illeagl packet size : "+thepkt.length);
-		
-		myOutStrm.write(hder.getAsByteArray());
-		//TODO 这里是以太帧信息,伪造的
+        return true;
 
 
-		myOutStrm.write(createFrameHeader());
+    }
 
-		myOutStrm.write(thepkt);
+    /**
+     * add packet to alreay opened cap.
+     * if close method was called earlier then will not add it.
+     *
+     * @param thepkt
+     * @return true if packet added and false otherwise
+     * @throws IOException
+     */
+    public boolean addPacket(byte[] thepkt) throws IOException {
+        if (thepkt == null || !_isopened || myTotalBytes > myLimit) return false;
 
-		myTotalBytes += sizeOfPkt + PCapPacketHeader.HEADER_SIZE;
+        PCapPacketHeader hder = new PCapPacketHeader();
 
-		return true;
-	}
+        long gap = getNanoTime() - myStartTime; // the gap since start in nano sec
 
-	//伪造的以太帧头部
-	private byte[] createFrameHeader() {
+        //14byte是以太帧头信息
+        int sizeOfPkt = thepkt.length + 14;
 
-		byte[] frames = new byte[14];
+        hder.setTimeValMsec32Uint((gap / 1000) % 1000000);
+        hder.setTimeValSec32Uint(gap / 1000000000l);
+        hder.setPktlenUint32(sizeOfPkt);
+        hder.setCaplen32Uint(sizeOfPkt);
 
-		frames[12] = 1<<3;
+        if (sizeOfPkt > MAX_PACKET_SIZE)
+            throw new IOException("Got illeagl packet size : " + thepkt.length);
 
-		return frames;
-	}
+        myOutStrm.write(hder.getAsByteArray());
+        //TODO 这里是以太帧信息,伪造的
 
-	/**
-	 * close file.
-	 * not reversible
-	 * @throws IOException
-	 */
-	public void close() 
-	{
-		if (_isopened && myOutStrm != null)
-		{
-			try
-			{
-				myOutStrm.close();
-			} catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			_isopened = false;
-			myOutStrm = null;
-		}
-	}
 
-	/**
-	 * @return number of bytes written so far.
-	 */
-	public long getTotalBytes()
-	{
-		return myTotalBytes;
-	}
+        myOutStrm.write(createFrameHeader());
 
-	/**
-	 * @return true if cap limit reached.
-	 */
-	public boolean isLimitReached()
-	{
-		return myTotalBytes >= myLimit;
-	}
+        myOutStrm.write(thepkt);
 
-	/**
-	 * set the cap max number of bytes.
-	 * @param theLimit
-	 */
-	public void setLimit(long theLimit)
-	{
-		myLimit = theLimit;
-	}
+        myTotalBytes += sizeOfPkt + PCapPacketHeader.HEADER_SIZE;
+
+        return true;
+    }
+
+    //伪造的以太帧头部
+    private byte[] createFrameHeader() {
+
+        byte[] frames = new byte[14];
+
+        frames[12] = 1 << 3;
+
+        return frames;
+    }
+
+    /**
+     * close file.
+     * not reversible
+     *
+     * @throws IOException
+     */
+    public void close() {
+        if (_isopened && myOutStrm != null) {
+            try {
+                myOutStrm.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            _isopened = false;
+            myOutStrm = null;
+        }
+    }
+
+    /**
+     * @return number of bytes written so far.
+     */
+    public long getTotalBytes() {
+        return myTotalBytes;
+    }
+
+    /**
+     * @return true if cap limit reached.
+     */
+    public boolean isLimitReached() {
+        return myTotalBytes >= myLimit;
+    }
+
+    /**
+     * set the cap max number of bytes.
+     *
+     * @param theLimit
+     */
+    public void setLimit(long theLimit) {
+        myLimit = theLimit;
+    }
 }

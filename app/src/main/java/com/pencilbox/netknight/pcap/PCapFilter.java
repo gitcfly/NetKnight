@@ -31,7 +31,7 @@ public class PCapFilter {
     //实施抓包咯,并设置appId,appId为0时,全部都要抓包
     public static boolean startCapPacket(long appId) {
 
-        if(!NetKnightService.isRunning ){
+        if (!NetKnightService.isRunning) {
             return false;
         }
 
@@ -48,31 +48,30 @@ public class PCapFilter {
 
 
 //        mCapAppId = -1;
-        String dirName =  SDCardUtils.getSDCardPath()+"NetKnight/";
+        String dirName = SDCardUtils.getSDCardPath() + "NetKnight/";
 
         String filePath = null;
-        Log.d("PCapFilter","fileName is "+dirName);
+        Log.d("PCapFilter", "fileName is " + dirName);
 
         try {
 
             File file = new File(dirName);
-            if(!file.exists()){
+            if (!file.exists()) {
                 file.mkdir();
             }
 
-            File writeFile ;
-            String time = (System.currentTimeMillis()+"").substring(5);
+            File writeFile;
+            String time = (System.currentTimeMillis() + "").substring(5);
 
-            if(mCapAppId == 0) {
-                filePath =dirName+"NetKnight_"+time+".pcap";
+            if (mCapAppId == 0) {
+                filePath = dirName + "NetKnight_" + time + ".pcap";
                 writeFile = new File(filePath);
-            }else{
+            } else {
 
-                App app = DataSupport.find(App.class,mCapAppId);
-                filePath = dirName + app.getName() +"_"+time+".pcap";
+                App app = DataSupport.find(App.class, mCapAppId);
+                filePath = dirName + app.getName() + "_" + time + ".pcap";
                 writeFile = new File(filePath);
             }
-
 
 
             mCapAppId = -1;
@@ -82,7 +81,7 @@ public class PCapFilter {
 
             PCapFileWriter pcapWriter = new PCapFileWriter(writeFile);
 
-            for(int i = 0;i<sPcapList.size();i++){
+            for (int i = 0; i < sPcapList.size(); i++) {
 //                pcapWriter.addPacket(sPcapList.get(i).getData(),sPcapList.get(i).getRecordingTime());
                 pcapWriter.addPacket(sPcapList.get(i).getData());
 
@@ -94,7 +93,7 @@ public class PCapFilter {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             sPcapList.clear();
             sPcapList = null;
             return filePath;
@@ -110,15 +109,14 @@ public class PCapFilter {
     public static void filterPacket(ByteBuffer byteBuffer, long appId) {
 
 
-
         if (mCapAppId == -1) {
             return;
         }
-        if (mCapAppId == 0||mCapAppId==appId) {
+        if (mCapAppId == 0 || mCapAppId == appId) {
 
-                Log.d("PCapFilter", "执行包过滤");
+            Log.d("PCapFilter", "执行包过滤");
 
-            synchronized (lock){
+            synchronized (lock) {
                 PcapFile pcapFile = new PcapFile();
 
 
@@ -139,9 +137,10 @@ public class PCapFilter {
 
                 pcapFile.setRecordingTime(System.currentTimeMillis());
                 sPcapList.add(pcapFile);
+            }
+
         }
 
+
     }
-
-
-}}
+}

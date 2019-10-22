@@ -6,7 +6,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.pencilbox.netknight.Constants;
 import com.pencilbox.netknight.NetKnightApp;
 import com.pencilbox.netknight.model.App;
 import com.pencilbox.netknight.utils.AppUtils;
@@ -30,7 +29,7 @@ public class IAppInfoImpl implements IAppInfoPresenter {
 
     private final int MSG_GET_APP_LIST = 0;
 
-    private final int MSG_ORDER =1;
+    private final int MSG_ORDER = 1;
 
 
 //    private final int MSG_ORDER_BY_NAME =1;
@@ -39,11 +38,11 @@ public class IAppInfoImpl implements IAppInfoPresenter {
 //    private final int MSG_ORDER_BY_WIFI =4;
 //    private final int MSG_ORDER_BY_WIFI_PERMIT =5;
 
-    private Handler mHandler = new Handler(Looper.getMainLooper()){
+    private Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
 //            super.handleMessage(msg);
-            switch (msg.what ){
+            switch (msg.what) {
                 case MSG_GET_APP_LIST:
 
                     mIAppInfoView.onLoadAppInfoList(mAppInfoAdapter);
@@ -63,7 +62,7 @@ public class IAppInfoImpl implements IAppInfoPresenter {
     };
 
 
-    public IAppInfoImpl(Context context,IAppInfoView iAppInfoView){
+    public IAppInfoImpl(Context context, IAppInfoView iAppInfoView) {
 
         mAppInfoAdapter = new AppInfoAdapter(context);
         mIAppInfoView = iAppInfoView;
@@ -91,7 +90,6 @@ public class IAppInfoImpl implements IAppInfoPresenter {
         }).start();
 
 
-
 //        mIAppInfoView.onLoadAppInfoList(mAppInfoAdapter);
 
     }
@@ -100,22 +98,19 @@ public class IAppInfoImpl implements IAppInfoPresenter {
     public void changeAppAccessPermission(int position, int typeId, boolean isWIFI) {
 
 
-
-
     }
 
     @Override
     public void orderAppList(final int orderType) {
 
-        Log.d("IAppInfoImpl","orderAppList"+orderType);
+        Log.d("IAppInfoImpl", "orderAppList" + orderType);
 
         new Thread(new Runnable() {
             @Override
             public void run() {
 
 
-
-                switch (orderType){
+                switch (orderType) {
 
                     case IAppInfoPresenter.ORDER_BY_NAME:
                         orderByName();
@@ -142,11 +137,7 @@ public class IAppInfoImpl implements IAppInfoPresenter {
             }
 
 
-
-
         }).start();
-
-
 
 
     }
@@ -156,7 +147,6 @@ public class IAppInfoImpl implements IAppInfoPresenter {
         Collections.sort(mAppInfoAdapter.getDatas(), new Comparator<App>() {
             @Override
             public int compare(App lhs, App rhs) {
-
 
 
                 return lhs.getName().compareTo(rhs.getName());
@@ -174,10 +164,10 @@ public class IAppInfoImpl implements IAppInfoPresenter {
 //                    return 0;
 //                }
 
-                if(lhs.getWifiType()<rhs.getWifiType()){
+                if (lhs.getWifiType() < rhs.getWifiType()) {
                     return -1;
                 }
-                if(lhs.getWifiType()>rhs.getWifiType()){
+                if (lhs.getWifiType() > rhs.getWifiType()) {
                     return 1;
                 }
                 return 0;
@@ -200,10 +190,10 @@ public class IAppInfoImpl implements IAppInfoPresenter {
 //                }
 
 
-                if(lhs.getMobileDataType()<rhs.getMobileDataType()){
+                if (lhs.getMobileDataType() < rhs.getMobileDataType()) {
                     return -1;
                 }
-                if(lhs.getMobileDataType()>rhs.getMobileDataType()){
+                if (lhs.getMobileDataType() > rhs.getMobileDataType()) {
                     return 1;
                 }
 
@@ -216,17 +206,17 @@ public class IAppInfoImpl implements IAppInfoPresenter {
 
     @Override
     public void changeAppIsVpnAccess(int position) {
-        App app =   mAppInfoAdapter.getItem(position);
+        App app = mAppInfoAdapter.getItem(position);
 
         app.setAccessVpn(!app.isAccessVpn());
         app.save();
 
         mAppInfoAdapter.notifyDataSetChanged();
         String msg;
-        if(app.isAccessVpn()){
+        if (app.isAccessVpn()) {
 
             msg = "成功设置该应用通过vpn";
-        }else{
+        } else {
             msg = "成功设置该应用不通过vpn";
         }
         mIAppInfoView.onListRefresh(msg);
