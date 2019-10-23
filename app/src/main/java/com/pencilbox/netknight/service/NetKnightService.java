@@ -203,7 +203,7 @@ public class NetKnightService extends VpnService implements Runnable {
                         }
                         isDataSend = true;
                     } else {
-                        MyLog.logd(this,"暂时不支持其他类型数据!!");
+                        MyLog.logd(this, "暂时不支持其他类型数据==" + packet2net.ip4Header.protocolNum);
                         isDataSend = false;
                     }
                 }else{

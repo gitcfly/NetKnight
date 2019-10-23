@@ -19,6 +19,7 @@ package com.pencilbox.netknight.net;
 import android.util.Log;
 
 import com.pencilbox.netknight.service.NetKnightService;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
@@ -56,7 +57,6 @@ public class UDPInput extends Thread {
                 while (keyIterator.hasNext() && !currentThread.isInterrupted()) {
                     SelectionKey key = keyIterator.next();
                     if (key.isValid() && key.isReadable()) {
-                        Log.d(TAG, "收到网络 UPD");
                         keyIterator.remove();
                         ByteBuffer receiveBuffer = ByteBufferPool.acquire();
                         // Leave space for the header
@@ -67,6 +67,7 @@ public class UDPInput extends Thread {
                         int readBytes = inputChannel.read(receiveBuffer);
                         Packet referencePacket = (Packet) key.attachment();
                         referencePacket.updateUDPBuffer(receiveBuffer, readBytes);
+                        Log.d(TAG, "收到网络 UPD：" + referencePacket.ip4Header.toString());
                         receiveBuffer.position(HEADER_SIZE + readBytes);
                         try {
                             inputQueue.put(receiveBuffer);

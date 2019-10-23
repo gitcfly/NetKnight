@@ -244,7 +244,7 @@ public class Packet {
         public int identificationAndFlagsAndFragmentOffset;
 
         public short TTL;
-        private short protocolNum;
+        public short protocolNum;
         public TransportProtocol protocol;
         public int headerChecksum;
 
